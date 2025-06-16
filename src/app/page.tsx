@@ -2,6 +2,12 @@
 import HeroSection from "@/components/siteComponents/hero-section"
 import { Suspense } from "react";
 import ProductCarousel from "@/components/siteComponents/productCarousel";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import FeaturedCategories from "@/components/siteComponents/featured-categories";
+import AboutSection from "@/components/siteComponents/aboutSection";
+import Testimonials from "@/components/siteComponents/testimonials";
+import NewsletterSection from "@/components/siteComponents/newsletter";
 
 export default function Homepage() {
   const featuredProducts = [
@@ -67,8 +73,26 @@ export default function Homepage() {
           <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg"></div>}>
             <ProductCarousel products={featuredProducts}/>
           </Suspense>
+
+          <div className="text-center mt-12">
+            <Link href='/products'>
+              <Button
+                variant='outline'
+                size='lg'
+                className='px-8 hover:bg-gray-900 hover:text-white transaction-all duration-300'
+              > View All Products </Button>
+            </Link>
+          </div>
         </div>
       </div>
+
+      <FeaturedCategories />
+
+      <AboutSection />
+
+      <Testimonials />
+
+      <NewsletterSection />
     </section>
   );
 }
