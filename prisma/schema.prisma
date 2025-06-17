@@ -1,50 +1,64 @@
 generator client {
-    provider = "prisma-client-js"
-    output = "../app/generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
 }
 
 datasource db {
-    provider = "postgresql"
-    url = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Brand {
-    A
-    B
-    C
-    D
+  A
+  B
+  C
+  D
 }
 
 enum Currency {
-    Dollars
-    NPR
-    INR
+  Dollars
+  NPR
+  INR
 }
 
 model User {
-    id Int @id @default(autoincrement())
-    email String @unique
-    name String
-    address String?
-    phoneNumber Int
-    createdAt DateTime @default(now())
-    orders Orders[] @relation(fields: [orderId], references: [id])
-    orderCounts Int @default(0)
-    currency Currency
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  firstName    String
+  lastName     String
+  address      String?
+  password     String
+  phoneNumber  Int
+  createdAt    DateTime @default(now())
+  orders       Orders[] // 1:N relation (User -> Orders)
+  orderCounts  Int      @default(0)
+  currency     Currency
 }
 
 model Products {
-    productId Int @id @default(autoincrement())
-    productName String 
-    productPrice Int
-    inStock Boolean @default(true)
-    productQty Int @default(0)
-    productBrand Brand
+  productId    Int       @id @default(autoincrement())
+  productName  String 
+  productPrice Int
+  inStock      Boolean   @default(true)
+  productQty   Int       @default(0)
+  productBrand Brand
+  orderItems   OrderItem[] // join table for M:N
 }
 
 model Orders {
-    orderId Int @id @default(autoincrement()) @unique
-    orderQty Int @default(1)
-    products Products[] @relation(fields: [productId], references: [id])
-    totalPrice Int @default(0)
+  orderId     Int         @id @default(autoincrement())
+  orderQty    Int         @default(1)
+  totalPrice  Int         @default(0)
+  userId      Int
+  user        User        @relation(fields: [userId], references: [id])
+  orderItems  OrderItem[] // join table for M:N
+}
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  orderId    Int
+  productId  Int
+  quantity   Int      @default(1)
+  order      Orders   @relation(fields: [orderId], references: [orderId])
+  product    Products @relation(fields: [productId], references: [productId])
 }

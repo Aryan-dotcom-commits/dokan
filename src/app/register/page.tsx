@@ -21,87 +21,31 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreeToTerms, setAgreeToTerms] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<{
-    firstName?: string
-    lastName?: string
-    email?: string
-    password?: string
-    confirmPassword?: string
-    terms?: string
-    general?: string
-  }>({})
-
-  const validateForm = () => {
-    const newErrors: any = {}
-
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required"
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required"
-    }
-
-    if (!formData.email) {
-      newErrors.email = "Email is required"
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email"
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required"
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters"
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = "Password must contain uppercase, lowercase, and number"
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password"
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
-    }
-
-    if (!agreeToTerms) {
-      newErrors.terms = "You must agree to the terms and conditions"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState("");
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
-    if (errors[field as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }))
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async(e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) return setErrors("Passwords do not match");
 
-    if (!validateForm()) return
-
-    setIsLoading(true)
-    setErrors({})
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Mock registration logic - replace with actual API call
-      console.log("Registration attempt:", formData)
-
-      // Redirect to login or dashboard
-      window.location.href = "/login"
-    } catch (error) {
-      setErrors({ general: "Registration failed. Please try again." })
-    } finally {
-      setIsLoading(false)
-    }
+    if (!agreeToTerms) return setErrors("Please agree to terms")
+    console.log(formData)
+    const response = await fetch('/api/userAuth', {
+      method: "POST",
+      headers: { 'Content-type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+    const data = await response.json();
+    console.log(data);
   }
+
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4">
@@ -118,13 +62,6 @@ export default function RegisterPage() {
         {/* Registration Form */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* General Error */}
-            {errors.general && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-sm text-red-600">{errors.general}</p>
-              </div>
-            )}
-
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -139,10 +76,9 @@ export default function RegisterPage() {
                     value={formData.firstName}
                     onChange={(e) => handleInputChange("firstName", e.target.value)}
                     placeholder="John"
-                    className={`pl-10 ${errors.firstName ? "border-red-300 focus:border-red-500" : ""}`}
+                    className={"pl-10 border-black-300 focus:border-black-500"}
                   />
                 </div>
-                {errors.firstName && <p className="text-sm text-red-600">{errors.firstName}</p>}
               </div>
 
               <div className="space-y-2">
@@ -155,9 +91,8 @@ export default function RegisterPage() {
                   value={formData.lastName}
                   onChange={(e) => handleInputChange("lastName", e.target.value)}
                   placeholder="Doe"
-                  className={errors.lastName ? "border-red-300 focus:border-red-500" : ""}
+                  className={"border-red-300 focus:border-red-500"}
                 />
-                {errors.lastName && <p className="text-sm text-red-600">{errors.lastName}</p>}
               </div>
             </div>
 
@@ -174,10 +109,9 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   placeholder="john@example.com"
-                  className={`pl-10 ${errors.email ? "border-red-300 focus:border-red-500" : ""}`}
+                  className={"pl-10 border-red-300 focus:border-red-500"}
                 />
               </div>
-              {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
             </div>
 
             {/* Password Field */}
@@ -193,7 +127,7 @@ export default function RegisterPage() {
                   value={formData.password}
                   onChange={(e) => handleInputChange("password", e.target.value)}
                   placeholder="Create a strong password"
-                  className={`pl-10 pr-10 ${errors.password ? "border-red-300 focus:border-red-500" : ""}`}
+                  className={"border-slate-300 focus:border-slate-500 pl-10 pr-10"}
                 />
                 <button
                   type="button"
@@ -203,7 +137,6 @@ export default function RegisterPage() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
               <div className="text-xs text-slate-500">
                 Must contain uppercase, lowercase, and number (8+ characters)
               </div>
@@ -222,7 +155,7 @@ export default function RegisterPage() {
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                   placeholder="Confirm your password"
-                  className={`pl-10 pr-10 ${errors.confirmPassword ? "border-red-300 focus:border-red-500" : ""}`}
+                  className={"pl-10 pr-10 border-slate-300 focus:border-slate-500"}
                 />
                 <button
                   type="button"
@@ -232,7 +165,6 @@ export default function RegisterPage() {
                   {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {errors.confirmPassword && <p className="text-sm text-red-600">{errors.confirmPassword}</p>}
             </div>
 
             {/* Terms Agreement */}
@@ -255,7 +187,6 @@ export default function RegisterPage() {
                   </Link>
                 </Label>
               </div>
-              {errors.terms && <p className="text-sm text-red-600">{errors.terms}</p>}
             </div>
 
             {/* Submit Button */}

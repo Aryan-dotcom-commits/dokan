@@ -1,8 +1,8 @@
+
 import type { Metadata } from "next";
 import { Poppins, Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/siteComponents/navigation";
-import { usePathname } from "next/navigation";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -25,8 +25,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const path = ["/login", "register"];
-
   return (
     <html lang="en">
       <body
