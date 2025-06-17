@@ -16,7 +16,7 @@ export default function Homepage() {
       title: 'Wireless Headphones',
       price: 49.99,
       inStock: true,
-      image: "",
+      image: "/headphones.jpg",
       brand: "JBL"
     },
 
@@ -25,7 +25,7 @@ export default function Homepage() {
       title: 'Austin Hoodie',
       price: 65.99,
       inStock: true,
-      image: "",
+      image: "/hoodie.jpg",
       brand: "Austin"
     },
 

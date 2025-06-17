@@ -23,11 +23,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           src={product.image || "/placeholder.svg"}
           alt={product.title}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          className="object-contain group-hover:scale-105 transition-transform duration-300"
         />
         {!product.inStock && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <Badge variant="secondary">Out of Stock</Badge>
+            <Badge variant="secondary" className="text-slate-600">Out of Stock</Badge>
           </div>
         )}
       </div>
