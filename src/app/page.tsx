@@ -8,6 +8,7 @@ import FeaturedCategories from "@/components/siteComponents/featured-categories"
 import AboutSection from "@/components/siteComponents/aboutSection";
 import Testimonials from "@/components/siteComponents/testimonials";
 import NewsletterSection from "@/components/siteComponents/newsletter";
+import Banner from "@/components/siteComponents/banner";
 
 export default function Homepage() {
   const featuredProducts = [
@@ -89,6 +90,8 @@ export default function Homepage() {
       <FeaturedCategories />
 
       <AboutSection />
+
+      <Banner />
 
       <Testimonials />
 
