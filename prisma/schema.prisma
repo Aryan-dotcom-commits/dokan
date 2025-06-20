@@ -32,7 +32,7 @@ model User {
   createdAt    DateTime @default(now())
   orders       Orders[] // 1:N relation (User -> Orders)
   orderCounts  Int      @default(0)
-  currency     Currency
+  currency     Currency @default(NPR)
 }
 
 model Products {

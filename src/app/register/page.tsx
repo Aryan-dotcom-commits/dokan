@@ -2,13 +2,14 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Dropdown } from "react-day-picker"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    currency: ""
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -45,6 +47,19 @@ export default function RegisterPage() {
     const data = await response.json();
     console.log(data);
   }
+
+  useEffect(() => {
+    const fetchCurrency = async () => {
+      const response = await fetch('/api/getData', {
+        method: 'GET',
+        headers: {'Content-type': 'application/json'},
+      });
+      console.log(response);
+      const data = await response.json();
+      console.log(data);
+    };
+    fetchCurrency();
+  }, []);
 
 
   return (
@@ -166,7 +181,24 @@ export default function RegisterPage() {
                 </button>
               </div>
             </div>
-
+            {/** Select currency */}
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
+                Select a Currency
+              </Label>
+              <div className="relative">
+                <select>
+                    {}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
             {/* Terms Agreement */}
             <div className="space-y-2">
               <div className="flex items-start space-x-2">
