@@ -8,56 +8,42 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  })
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({})
+  const [isLoading, setIsLoading] = useState(false);
 
-  const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {}
+  //Assigning useRouter
 
-    if (!email) {
-      newErrors.email = "Email is required"
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Please enter a valid email"
-    }
+  const router = useRouter();
 
-    if (!password) {
-      newErrors.password = "Password is required"
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    const response = await fetch('/api/userSession', {
+      method: 'POST',
+      headers: {'Content-type': 'application/json'},
+      body: JSON.stringify(formData)
+    });
+    console.log('Your backend data', formData);
+    const data = await response.json();
+    console.log(data);
+    setIsLoading(true);
 
-    if (!validateForm()) return
-
-    setIsLoading(true)
-    setErrors({})
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      // Mock login logic - replace with actual authentication
-      console.log("Login attempt:", { email, password, rememberMe })
-
-      // Redirect to dashboard or previous page
-      window.location.href = "/profile"
-    } catch (error) {
-      setErrors({ general: "Invalid email or password. Please try again." })
-    } finally {
-      setIsLoading(false)
+    if (response.ok) {
+        router.push('/profile');
     }
   }
 
@@ -76,12 +62,7 @@ export default function LoginPage() {
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* General Error */}
-            {errors.general && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-sm text-red-600">{errors.general}</p>
-              </div>
-            )}
+            
 
             {/* Email Field */}
             <div className="space-y-2">
@@ -93,13 +74,13 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
                   placeholder="Enter your email"
-                  className={`pl-10 ${errors.email ? "border-red-300 focus:border-red-500" : ""}`}
+                  className={`pl-10 `}
                 />
               </div>
-              {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
+              
             </div>
 
             {/* Password Field */}
@@ -112,10 +93,10 @@ export default function LoginPage() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={(e) => handleInputChange("password", e.target.value)}
                   placeholder="Enter your password"
-                  className={`pl-10 pr-10 ${errors.password ? "border-red-300 focus:border-red-500" : ""}`}
+                  className={`pl-10 pr-10 `}
                 />
                 <button
                   type="button"
@@ -125,21 +106,11 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
+              
             </div>
 
             {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                />
-                <Label htmlFor="remember" className="text-sm text-slate-600">
-                  Remember me
-                </Label>
-              </div>
               <Link href="/forgot-password" className="text-sm text-black hover:text-slate-700 font-medium">
                 Forgot password?
               </Link>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { User, Package, Settings, Mail, Phone, MapPin, Calendar, Edit3 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,60 +10,30 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-// Mock user data
-const userData = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  phone: "+1 (555) 123-4567",
-  address: "123 Main St, City, State 12345",
-  joinDate: "January 2023",
-  avatar: "/placeholder.svg?height=100&width=100",
-}
-
-// Mock orders data
-const orders = [
-  {
-    id: "ORD-001",
-    date: "2024-01-15",
-    status: "Delivered",
-    total: 299.99,
-    items: [{ name: "Premium Wireless Headphones", quantity: 1, price: 299.99 }],
-  },
-  {
-    id: "ORD-002",
-    date: "2024-01-10",
-    status: "Shipped",
-    total: 449.98,
-    items: [
-      { name: "Smart Fitness Watch", quantity: 2, price: 199.99 },
-      { name: "Organic Cotton T-Shirt", quantity: 1, price: 49.99 },
-    ],
-  },
-  {
-    id: "ORD-003",
-    date: "2024-01-05",
-    status: "Processing",
-    total: 89.99,
-    items: [{ name: "Minimalist Desk Lamp", quantity: 1, price: 89.99 }],
-  },
-]
 
 export default function ProfilePage() {
-  const [user, setUser] = useState(userData)
-  const [isEditing, setIsEditing] = useState(false)
+  const [user, setUser] = useState({
+    firstName: '',
+    lastName: '',
+    email: ''
+  });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Delivered":
-        return "bg-green-100 text-green-800"
-      case "Shipped":
-        return "bg-blue-100 text-blue-800"
-      case "Processing":
-        return "bg-yellow-100 text-yellow-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
+  const fetchProfile = async () => {
+    const response = await fetch('/api/userSession', {
+      method: 'GET',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'include'
+    });
+
+    console.log('Backend response', response);
+    const data = await response.json();
+
+    console.log('The data from the backend', data);
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -92,9 +62,9 @@ export default function ProfilePage() {
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 <div className="relative">
                   <Avatar className="w-24 h-24">
-                    <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+                    <AvatarImage src={"/placeholder.svg"} alt={user.firstName} />
                     <AvatarFallback className="text-xl font-medium">
-                      {user.name
+                      {user.firstName
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
@@ -111,30 +81,20 @@ export default function ProfilePage() {
 
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-medium text-gray-900">{user.name}</h2>
+                    <h2 className="text-2xl font-medium text-gray-900">{user.firstName}</h2>
                   </div>
-                  <p className="text-gray-600 mb-4">Customer since {user.joinDate}</p>
 
                   <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <Package className="h-4 w-4" />
-                      <span>{orders.length} Orders</span>
+                      <span> Orders</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      <span>Member since {user.joinDate}</span>
+                      <span>Member since</span>
                     </div>
                   </div>
                 </div>
-
-                <Button
-                  variant={isEditing ? "default" : "outline"}
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="flex items-center gap-2"
-                >
-                  <Edit3 className="h-4 w-4" />
-                  {isEditing ? "Save Changes" : "Edit Profile"}
-                </Button>
               </div>
             </div>
 
@@ -150,7 +110,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div>
+                  {/* <div>
                     <Label className="text-sm font-medium text-gray-700 mb-2 block">Email Address</Label>
                     {isEditing ? (
                       <Input
@@ -164,10 +124,10 @@ export default function ProfilePage() {
                         <span className="text-gray-900">{user.email}</span>
                       </div>
                     )}
-                  </div>
+                  </div> */}
 
                   <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-2 block">Phone Number</Label>
+                    {/* <Label className="text-sm font-medium text-gray-700 mb-2 block">Phone Number</Label>
                     {isEditing ? (
                       <Input
                         value={user.phone}
@@ -179,7 +139,7 @@ export default function ProfilePage() {
                         <Phone className="h-4 w-4 text-gray-400" />
                         <span className="text-gray-900">{user.phone}</span>
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </div>
@@ -194,7 +154,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div>
+                  {/* <div>
                     <Label className="text-sm font-medium text-gray-700 mb-2 block">Full Name</Label>
                     {isEditing ? (
                       <Input
@@ -208,9 +168,9 @@ export default function ProfilePage() {
                         <span className="text-gray-900">{user.name}</span>
                       </div>
                     )}
-                  </div>
+                  </div> */}
 
-                  <div>
+                  {/* <div>
                     <Label className="text-sm font-medium text-gray-700 mb-2 block">Address</Label>
                     {isEditing ? (
                       <Input
@@ -224,7 +184,7 @@ export default function ProfilePage() {
                         <span className="text-gray-900">{user.address}</span>
                       </div>
                     )}
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -237,7 +197,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="divide-y">
-                {orders.map((order) => (
+                {/* {orders.map((order) => (
                   <div key={order.id} className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div>
@@ -268,7 +228,7 @@ export default function ProfilePage() {
                       </Button>
                     </div>
                   </div>
-                ))}
+                ))} */}
               </div>
             </div>
           </TabsContent>

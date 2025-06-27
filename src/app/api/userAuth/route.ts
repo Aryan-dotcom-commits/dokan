@@ -1,64 +1,58 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "../globalPrisma";
-import { serialize } from "cookie";
-import { encrypt } from "@/lib/session";
-import { NextApiResponse } from "next";
+import { NextResponse, NextRequest } from "next/server";
+import { PrismaClient } from "@/generated/prisma";
+import { Currency } from "@/generated/prisma";
+import { generateToken } from "@/lib/jwt";
 
-export async function POST(req: NextRequest, res: NextApiResponse)
+const prisma = new PrismaClient();
+
+export async function GET(res: NextResponse) 
+{
+    try {
+        const getCurrencies = Object.values(Currency);
+
+        if (getCurrencies.length <= 0) return NextResponse.json({message: 'There are no currencies', status: 404});
+        return NextResponse.json({message: 'Fetched Currencies', status: 200, results: getCurrencies});
+    } catch (error) {
+        return NextResponse.json({message: 'Error on DB', status: 500})
+    }
+}
+
+export async function POST(req: NextRequest)
 {
     try {
         const body = await req.json();
+        console.log(body);
+
+        const {firstName, lastName, email, password, currency} = body;
+        if (!firstName || !lastName || !email || !password || !currency) return NextResponse.json({message: 'Invalid Type', status: 401});
+        const checkUserMail = await prisma.user.findUnique({where: 
+            {email: email}
+        });
+
+        if (checkUserMail) {
+            return NextResponse.json({message: 'You already exist, create with another mail or find a new one', status: 409}) //conflict
+        } 
+
         try {
-            const body = await req.json();
-            console.log(body);
-        } catch {
-            return NextResponse.json({message: "Invalid json"})
-        }
-
-        const {firstName, lastName, email, password, phoneNumber, currency} = body
-        if (!firstName || !lastName || !email || !password || !phoneNumber || !currency) return NextResponse.json({message: "Missing Fields"});
-        const findEmail = await prisma.user.findUnique({
-            where: {
-                email
-            }
-        });
-
-        if (findEmail) return NextResponse.json({
-            message: "There is already an account with this mail, please use something else", 
-            status: 409, 
-            type: "Conflict"
-        });
-
-        const userCreated = await prisma.user.create({
-            data: {
-                firstName, 
-                lastName, 
-                email, 
-                password,
-                phoneNumber,
-                currency
-            }
-        })
-
-        const success = NextResponse.json({message: "User has been created", status: 201, res: userCreated})
-
-        if (success) {
-            const sessionData = success;
-            const encryptedData = encrypt(sessionData);
-
-            const cookie = serialize('session', encryptedData, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: 60,
-                path: '/'
+            const createUser = await prisma.user.create({
+                data: {
+                    firstName,
+                    lastName,
+                    email,
+                    password,
+                    currency,
+                }
             });
 
-            res.setHeader('Set-Cookie', cookie);
-            return NextResponse.json({message: 'User has been created', status: 200, cookie: cookie});
-        }
-    }
+            const token = generateToken({email: createUser.email});
 
-    catch (error) {
-        return NextResponse.json({message: "Server Error", status: 500, issue: error})
+            if (!createUser) return NextResponse.json({message: 'Error creating you', status: 400});
+            return NextResponse.json({message: 'You are recorded as a user', status: 200, results: createUser, identity: token})
+        } catch (error) {
+            return NextResponse.json({message: 'No register', status: 400})
+        }
+       
+    } catch (error) {
+        return NextResponse.json({message: 'Error on DB', status: 500, issue: error});
     }
 }

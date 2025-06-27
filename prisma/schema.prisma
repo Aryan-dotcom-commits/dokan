@@ -1,6 +1,12 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -8,57 +14,62 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Brand {
-  A
-  B
-  C
-  D
-}
-
 enum Currency {
-  Dollars
   NPR
+  USD
   INR
 }
 
+enum Layers {
+  Winter
+  Summer
+  Autumn
+  Spring
+}
+
+enum Brands {
+  Kitchen
+  DailyLiving
+  Bedroom
+  Lifestyle
+  Cozy
+}
+
 model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  firstName    String
-  lastName     String
-  address      String?
-  password     String
-  phoneNumber  Int
-  createdAt    DateTime @default(now())
-  orders       Orders[] // 1:N relation (User -> Orders)
-  orderCounts  Int      @default(0)
-  currency     Currency @default(NPR)
+  id Int @id @default(autoincrement())
+  firstName String
+  lastName String
+  email String @unique
+  password String 
+  currency Currency @default(NPR)
+  order Orders[] // 1 to many relationship
 }
 
 model Products {
-  productId    Int       @id @default(autoincrement())
-  productName  String 
-  productPrice Int
-  inStock      Boolean   @default(true)
-  productQty   Int       @default(0)
-  productBrand Brand
-  orderItems   OrderItem[] // join table for M:N
+  id Int @id @default(autoincrement())
+  name String
+  quantity Int
+  description String
+  price Int
+  inStock Boolean @default(true)
+  orderItems OrderItems[]
+  productType Layers
+  brand Brands
 }
 
 model Orders {
-  orderId     Int         @id @default(autoincrement())
-  orderQty    Int         @default(1)
-  totalPrice  Int         @default(0)
-  userId      Int
-  user        User        @relation(fields: [userId], references: [id])
-  orderItems  OrderItem[] // join table for M:N
+  id Int @id @default(autoincrement())
+  Title String
+  orderItems OrderItems[]
+  userId Int // Foreign Key
+  user User @relation(fields:[userId], references:[id])
 }
 
-model OrderItem {
-  id         Int      @id @default(autoincrement())
-  orderId    Int
-  productId  Int
-  quantity   Int      @default(1)
-  order      Orders   @relation(fields: [orderId], references: [orderId])
-  product    Products @relation(fields: [productId], references: [productId])
+model OrderItems {
+  id Int @id @default(autoincrement())
+  orderId Int // Foreign Key
+  productId Int // Foreign Key
+  order Orders @relation(fields: [orderId], references: [id])
+  products Products @relation(fields: [productId], references: [id])
+  orderedQty Int @default(0)
 }

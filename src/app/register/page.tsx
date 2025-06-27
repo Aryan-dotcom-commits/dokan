@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Currency } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,7 +17,6 @@ export default function RegisterPage() {
     lastName: "",
     email: "",
     password: "",
-    confirmPassword: "",
     currency: ""
   })
   const [showPassword, setShowPassword] = useState(false)
@@ -25,6 +24,7 @@ export default function RegisterPage() {
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState("");
+  const [currency, setCurrency] = useState([]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -35,10 +35,9 @@ export default function RegisterPage() {
 
   const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) return setErrors("Passwords do not match");
 
     if (!agreeToTerms) return setErrors("Please agree to terms")
-    console.log(formData)
+    console.log('You are going to the backend', formData)
     const response = await fetch('/api/userAuth', {
       method: "POST",
       headers: { 'Content-type': 'application/json' },
@@ -50,13 +49,16 @@ export default function RegisterPage() {
 
   useEffect(() => {
     const fetchCurrency = async () => {
-      const response = await fetch('/api/getData', {
+      const response = await fetch('/api/userAuth', {
         method: 'GET',
-        headers: {'Content-type': 'application/json'},
-      });
+        headers: { 'Content-type': 'application/json' }
+      })
       console.log(response);
+      if (response.status === 404) console.log('Bro I cannot enter the backend')
       const data = await response.json();
-      console.log(data);
+      console.log("Response", data);
+      console.log(data.results);
+      setCurrency(data.results);
     };
     fetchCurrency();
   }, []);
@@ -157,46 +159,20 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Confirm Password Field */}
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
-                Confirm Password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                  placeholder="Confirm your password"
-                  className={"pl-10 pr-10 border-slate-300 focus:border-slate-500"}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
             {/** Select currency */}
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
                 Select a Currency
               </Label>
               <div className="relative">
-                <select>
-                    {}
+                <select onChange={(e) => handleInputChange("currency", e.target.value)}>
+                  <option defaultValue={''}> Choose your desired currency </option>
+                    {currency.map((items: any, idx) => (
+                      <option key={idx} value={items}>
+                        {items}
+                      </option>
+                    ))}
                 </select>
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
               </div>
             </div>
             {/* Terms Agreement */}
