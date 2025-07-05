@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import ProductCard from "@/components/siteComponents/productCard"
+import ProductCard from "@/components/product-card"
 
 interface Product {
   id: number

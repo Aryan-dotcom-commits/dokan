@@ -20,6 +20,11 @@ enum Currency {
   INR
 }
 
+enum Roles {
+  User
+  Vendor
+}
+
 enum Layers {
   Winter
   Summer
@@ -27,22 +32,61 @@ enum Layers {
   Spring
 }
 
+enum Category {
+  HeadSets
+  StudyLamps
+  Tshirts
+  Mugs
+  Speaker
+  Charger
+  Bottle
+}
+
 enum Brands {
-  Kitchen
-  DailyLiving
-  Bedroom
-  Lifestyle
-  Cozy
+  BrewMaster
+  SoundWave
+  ChargeTech
+  HydroFlow
+  FitPro
+  LightCo
+  EcoWear
+}
+
+enum Collections {
+  KitchenSupplies
+  Home
+  Electronics
+  Fashion
+  Sports
+}
+
+enum SalesType {
+  Summer
+  Winter
+} 
+
+enum OrderStatus {
+  Pending
+  Delievered
+  InComplete
+  Cancelled
 }
 
 model User {
   id Int @id @default(autoincrement())
-  firstName String
-  lastName String
+  username String
+  registeredDate DateTime @default(now())
+  address String
+  phoneNum Int
+  totalOrders Int @default(0)
   email String @unique
   password String 
   currency Currency @default(NPR)
   order Orders[] // 1 to many relationship
+  roles Roles[]
+  cart Cart[]
+  wishlist Wishlist[]
+  review Review[]
 }
 
 model Products {
@@ -53,23 +97,78 @@ model Products {
   price Int
   inStock Boolean @default(true)
   orderItems OrderItems[]
-  productType Layers
+  reviews Review[]
+  category Category
   brand Brands
+  totalRatings Int @default(0)
+  inSale Boolean @default(false)
+  salePrice Int? @default(0)
+  productImagePath String 
+  orderSummary OrderSummary[]
+  cart Cart[]
+  wishlist Wishlist[]
 }
 
 model Orders {
   id Int @id @default(autoincrement())
   Title String
   orderItems OrderItems[]
+  orderSummary OrderSummary[]
   userId Int // Foreign Key
   user User @relation(fields:[userId], references:[id])
 }
 
 model OrderItems {
   id Int @id @default(autoincrement())
+  placedDate DateTime @default(now())
+  price Int
+  quantity String
+  orderStatus OrderStatus @default(Pending)
   orderId Int // Foreign Key
   productId Int // Foreign Key
   order Orders @relation(fields: [orderId], references: [id])
   products Products @relation(fields: [productId], references: [id])
   orderedQty Int @default(0)
+}
+
+model OrderSummary {
+  id Int @id @default(autoincrement())
+  orderId Int
+  productId Int
+  order Orders @relation(fields: [orderId], references: [id])
+  product Products @relation(fields: [productId], references: [id])
+  tax Int @default(0)
+  shipping Int @default(0)
+  subtotal Int @default(0)
+  Total Int @default(0)
+}
+
+model Cart {
+  id Int @id @default(autoincrement())
+  userId Int 
+  user User @relation(fields: [userId], references: [id])
+  productId Int
+  product Products @relation(fields: [productId], references: [id])
+  quantity Int @default(0)
+  orderAddedAt DateTime @default(now())
+}
+
+model Wishlist {
+  id Int @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  productId Int
+  product Products @relation(fields: [productId], references: [id])
+  dateAddedAt DateTime @default(now())
+}
+
+model Review {
+  id Int @id @default(autoincrement())
+  userId Int 
+  user User @relation(fields: [userId], references: [id])
+  productId Int
+  product Products @relation(fields: [productId], references: [id])
+  ratings Int @default(0)
+  comments String
+  dateAddedAt DateTime @default(now())
 }

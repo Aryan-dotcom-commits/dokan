@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { User, Package, Settings, Mail, Phone, MapPin, Calendar, Edit3 } from "lucide-react"
+import { useState } from "react"
+import { User, Package, Settings, Mail, Phone, MapPin, Calendar, Edit3, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,36 +9,109 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Link from "next/link"
 
+// Mock user data
+const userData = {
+  name: "John Doe",
+  email: "john.doe@example.com",
+  phone: "+1 (555) 123-4567",
+  address: "123 Main St, City, State 12345",
+  joinDate: "January 2023",
+  avatar: "/placeholder.svg?height=100&width=100",
+  isVendor: false,
+  businessName: "John's Electronics",
+}
+
+// Mock orders data
+const orders = [
+  {
+    id: "ORD-001",
+    date: "2024-01-15",
+    status: "Delivered",
+    total: 299.99,
+    items: [{ name: "Premium Wireless Headphones", quantity: 1, price: 299.99 }],
+  },
+  {
+    id: "ORD-002",
+    date: "2024-01-10",
+    status: "Shipped",
+    total: 449.98,
+    items: [
+      { name: "Smart Fitness Watch", quantity: 2, price: 199.99 },
+      { name: "Organic Cotton T-Shirt", quantity: 1, price: 49.99 },
+    ],
+  },
+]
 
 export default function ProfilePage() {
-  const [user, setUser] = useState({
-    firstName: '',
-    lastName: '',
-    email: ''
-  });
+  const [user, setUser] = useState(userData)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isVendorMode, setIsVendorMode] = useState(user.isVendor)
 
-  const fetchProfile = async () => {
-    const response = await fetch('/api/userSession', {
-      method: 'GET',
-      headers: {'Content-Type': 'application/json'},
-      credentials: 'include'
-    });
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Delivered":
+        return "bg-green-100 text-green-800"
+      case "Shipped":
+        return "bg-blue-100 text-blue-800"
+      case "Processing":
+        return "bg-yellow-100 text-yellow-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
 
-    console.log('Backend response', response);
-    const data = await response.json();
-
-    console.log('The data from the backend', data);
-  };
-
-  useEffect(() => {
-    fetchProfile();
-  }, [])
+  const handleVendorToggle = () => {
+    setIsVendorMode(!isVendorMode)
+    if (!isVendorMode) {
+      // Redirect to vendor dashboard when switching to vendor mode
+      window.location.href = "/vendor/dashboard"
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-light tracking-tight text-gray-900 mb-8">My Profile</h1>
+
+        {/* Vendor Toggle */}
+        <div className="bg-white rounded-2xl p-6 border shadow-sm mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900">Account Mode</h3>
+              <p className="text-gray-600">Switch between buyer and vendor modes</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className={`text-sm font-medium ${!isVendorMode ? "text-purple-600" : "text-gray-500"}`}>
+                Buyer
+              </span>
+              <button
+                onClick={handleVendorToggle}
+                className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    isVendorMode ? "translate-x-6 bg-purple-600" : "translate-x-1"
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${isVendorMode ? "text-purple-600" : "text-gray-500"}`}>
+                Vendor
+              </span>
+            </div>
+          </div>
+          {!user.isVendor && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-700">
+                Want to start selling?
+                <Link href="/register?role=vendor" className="font-medium underline ml-1">
+                  Complete your vendor registration
+                </Link>
+              </p>
+            </div>
+          )}
+        </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
@@ -62,9 +135,9 @@ export default function ProfilePage() {
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 <div className="relative">
                   <Avatar className="w-24 h-24">
-                    <AvatarImage src={"/placeholder.svg"} alt={user.firstName} />
+                    <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
                     <AvatarFallback className="text-xl font-medium">
-                      {user.firstName
+                      {user.name
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
@@ -81,20 +154,36 @@ export default function ProfilePage() {
 
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-medium text-gray-900">{user.firstName}</h2>
+                    <h2 className="text-2xl font-medium text-gray-900">{user.name}</h2>
+                    {user.isVendor && (
+                      <Badge className="bg-purple-100 text-purple-700">
+                        <Store className="w-3 h-3 mr-1" />
+                        Vendor
+                      </Badge>
+                    )}
                   </div>
+                  <p className="text-gray-600 mb-4">Customer since {user.joinDate}</p>
 
                   <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <Package className="h-4 w-4" />
-                      <span> Orders</span>
+                      <span>{orders.length} Orders</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      <span>Member since</span>
+                      <span>Member since {user.joinDate}</span>
                     </div>
                   </div>
                 </div>
+
+                <Button
+                  variant={isEditing ? "default" : "outline"}
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="flex items-center gap-2"
+                >
+                  <Edit3 className="h-4 w-4" />
+                  {isEditing ? "Save Changes" : "Edit Profile"}
+                </Button>
               </div>
             </div>
 
@@ -110,7 +199,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-4">
-                  {/* <div>
+                  <div>
                     <Label className="text-sm font-medium text-gray-700 mb-2 block">Email Address</Label>
                     {isEditing ? (
                       <Input
@@ -124,10 +213,10 @@ export default function ProfilePage() {
                         <span className="text-gray-900">{user.email}</span>
                       </div>
                     )}
-                  </div> */}
+                  </div>
 
                   <div>
-                    {/* <Label className="text-sm font-medium text-gray-700 mb-2 block">Phone Number</Label>
+                    <Label className="text-sm font-medium text-gray-700 mb-2 block">Phone Number</Label>
                     {isEditing ? (
                       <Input
                         value={user.phone}
@@ -139,7 +228,7 @@ export default function ProfilePage() {
                         <Phone className="h-4 w-4 text-gray-400" />
                         <span className="text-gray-900">{user.phone}</span>
                       </div>
-                    )} */}
+                    )}
                   </div>
                 </div>
               </div>
@@ -154,7 +243,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-4">
-                  {/* <div>
+                  <div>
                     <Label className="text-sm font-medium text-gray-700 mb-2 block">Full Name</Label>
                     {isEditing ? (
                       <Input
@@ -168,9 +257,9 @@ export default function ProfilePage() {
                         <span className="text-gray-900">{user.name}</span>
                       </div>
                     )}
-                  </div> */}
+                  </div>
 
-                  {/* <div>
+                  <div>
                     <Label className="text-sm font-medium text-gray-700 mb-2 block">Address</Label>
                     {isEditing ? (
                       <Input
@@ -184,10 +273,39 @@ export default function ProfilePage() {
                         <span className="text-gray-900">{user.address}</span>
                       </div>
                     )}
-                  </div> */}
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Vendor Information */}
+            {user.isVendor && (
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Store className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900">Vendor Information</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700 mb-2 block">Business Name</Label>
+                    <div className="flex items-center gap-2 p-3 bg-white rounded-lg">
+                      <Store className="h-4 w-4 text-gray-400" />
+                      <span className="text-gray-900">{user.businessName}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <Link href="/vendor/dashboard">
+                      <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
+                        Go to Vendor Dashboard
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-6">
@@ -197,7 +315,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="divide-y">
-                {/* {orders.map((order) => (
+                {orders.map((order) => (
                   <div key={order.id} className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div>
@@ -228,7 +346,7 @@ export default function ProfilePage() {
                       </Button>
                     </div>
                   </div>
-                ))} */}
+                ))}
               </div>
             </div>
           </TabsContent>
